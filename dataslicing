@@ -1,0 +1,23 @@
+library(caret); library(kernlab); data(spam)
+split <- createDataPartition(y=spam$type,p=0.75,list=F)
+train <- spam[split,]
+test <- spam[-split,]
+dim(train)
+table(spam$type)
+#smaller datasets
+set.seed(32323)
+folds <- createFolds(y=spam$type,k=10,list = T,returnTrain = T)
+sapply(folds,length)
+folds[1][1:10]
+#Resampling
+set.seed(32323)
+folds2 <- createResample(y=spam$type,times = 10,list = T)
+sapply(folds2,length)
+#Time Slices
+set.seed(32323)
+tme <- 1:1000
+folds3 <- createTimeSlices(y=tme,initialWindow = 20,horizon = 10)
+names(folds3)
+folds3$train[[1]]
+folds3$train[1]
+folds3$test[3]
