@@ -1,0 +1,90 @@
+library(ggplot2)
+library(caret)
+library(kernlab)
+data(spam)
+split <- createDataPartition(y=spam$type,p=0.75,list=F)
+training <- spam[split,]
+testing <- spam[-split,]
+dim(train)
+table(spam$type)
+#smaller datasets
+set.seed(32323)
+folds <- createFolds(y=spam$type,k=10,list = T,returnTrain = T)
+sapply(folds,length)
+folds[1][1:10]
+#Resampling
+set.seed(32323)
+folds2 <- createResample(y=spam$type,times = 10,list = T)
+sapply(folds2,length)
+#Time Slices
+set.seed(32323)
+tme <- 1:1000
+folds3 <- createTimeSlices(y=tme,initialWindow = 20,horizon = 10)
+names(folds3)
+folds3$train[[1]]
+folds3$train[1]
+folds3$test[3]
+#SPAM Example
+modelFit <- train(type~.,data = training,method="glm")
+#Plotting predictors, Example Wage Data
+library(ISLR); library(ggplot2); library(caret)
+data(Wage)
+summary(Wage)
+split <- createDataPartition(y=Wage$wage,p=0.7,list = F)
+train <- Wage[split,]
+test <- Wage[-split,]
+dim(train);dim(test)
+featurePlot(x=train[,c("age","education","jobclass")],y=train$wage,plot = "pairs")
+qplot(age,wage,data = train)
+qplot(age,wage,colour=jobclass,data = train)
+#regression smoothers
+qq <- qplot(age,wage,colour=education,data = train)
+qq
+qq+geom_smooth(method = "lm",formula = y~x)
+#cutWage <- cut2(train$wage,g=3)
+qplot(wage,colour=education,data=train,geom="density")
+#Preprocess
+hist(training$capitalAve,main = "",xlab = "ave. capital run length")
+#standardizing
+mean(training$capitalAve)
+sd(training$capitalAve)
+trainCA <- (training$capitalAve-mean(training$capitalAve))/sd(training$capitalAve)
+mean(trainCA)
+sd(trainCA)
+testCA <- (testing$capitalAve-mean(training$capitalAve))/sd(training$capitalAve)
+mean(testCA)
+sd(testCA)
+preObj <- preProcess(training[,-58],method = c("center","scale"))
+trainCA2 <- predict(preObj,training[,-58])$capitalAve
+mean(trainCA2)
+sd(trainCA2)
+testCA2 <- predict(preObj,testing[,-58])$capitalAve
+mean(testCA2)
+sd(testCA2)
+modelFit <- train(type~.,data=training,preProcess=c("center","scale"),method="glm")
+hist(trainCA)
+hist(trainCA,xlim = c(0,1.5))
+
+#Missing data
+set.seed(13343)
+#make some values NA
+training$CA <- training$capitalAve
+summary(training$CA)
+selelectNA <- rbinom(dim(training)[1],size = 1,prob = 0.05)==1
+training$CA[selelectNA] <- NA
+summary(training$CA)
+
+#Impute and standarize
+preObj <- preProcess(training[,-58],method = "knnImpute")
+capAve <- predict(preObj,training[,-58])$CA
+summary(training$CA)
+
+#satndarize true values
+capAveTruth <- training$capitalAve
+capAveTruth <- (capAveTruth-mean(capAveTruth))/sd(capAveTruth)
+mean(capAveTruth)
+sd(capAveTruth)
+#comparando valores reales con Imputing data
+quantile(capAve-capAveTruth)
+quantile((capAve-capAveTruth)[selelectNA])
+quantile((capAve-capAveTruth)[!selelectNA])
