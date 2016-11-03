@@ -1,0 +1,18 @@
+library(kernlab);data(spam)
+spam$capitalAveq <- spam$capitalAve^2
+library(ISLR); library(caret); data(Wage)
+split <- createDataPartition(y=Wage$wage,p=0.7,list=F)
+train <- Wage[split,];test <- Wage[-split,]
+table(train$jobclass)
+dum <- dummyVars(wage~jobclass,data = train)
+head(predict(dum,newdata=train))
+#para determinar el tamaño de la varianza
+nsv <- nearZeroVar(train,saveMetrics = T)
+nsv
+#
+library(splines)
+bsBasis <- bs(train$age,df=3)
+bsBasis
+lm <- lm(wage~bsBasis,data = train)
+plot(train$age,train$wage,pch=19,cex=0.5)
+points(train$age,predict(lm,newdata=train),col="red",pch=17,cex=0.5)
