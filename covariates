@@ -1,0 +1,23 @@
+library(ISLR);library(ggplot2);library(caret)
+data(Wage)
+wag <- subset(Wage,select = -c(logwage))
+summary(wag)
+split <- createDataPartition(y=wag$wage,p=0.7,list = F)
+train <- wag[split,];test <- wag[-split,]
+featurePlot(x=train[,c("age","education","jobclass")],y=train$wage,plot = "pairs")
+qplot(age,wage,data=train)
+qplot(age,wage,colour=education,data=train)
+mod <- train(wage~age+jobclass+education,method="lm",data=train)
+fin <- mod$finalModel
+fin
+#Diagnostics
+plot(fin,1,pch=20,cex=0.5,col="blue")
+qplot(fin$fitted.values,fin$residuals,colour=race,data = train)
+#Predicted versus truth in test set
+pred <- predict(mod,test)
+plot(fin$residuals,pch=20)
+qplot(wage,pred,colour=year,data=test)
+#covariates
+modFitAll <- train(wage~.,data=train,method="lm")
+pred <- predict(modFitAll,test)
+qplot(wage,pred,data=test)
