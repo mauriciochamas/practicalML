@@ -1,0 +1,41 @@
+#Preprocessing with Principal Components Analysis (PCA)
+library(caret);library(kernlab);data(spam)
+split <- createDataPartition(y=spam$type,p=0.75,list = F)
+train <- spam[split,]
+test <- spam[-split,]
+M <- abs(cor(train[,-58]))
+diag(M) <- 0
+which(M>0.8,arr.ind = T)
+plot(spam[,32],spam[,34])
+plot(spam[,32],spam[,40])
+plot(spam[,34],spam[,40])
+x=0.71*train$num415+0.71*train$num857
+y=0.71*train$num415-0.71*train$num857
+plot(x,y)
+x=0.71*train$num415+0.71*train$direct
+y=0.71*train$num415-0.71*train$direct
+plot(x,y)
+x=0.71*train$direct+0.71*train$num857
+y=0.71*train$direct-0.71*train$num857
+plot(x,y)
+smallSpam <- spam[,c(32,34,40)]
+prComp <- prcomp(smallSpam,scale. = F)
+plot(prComp$x[,1],prComp$x[,2])
+plot(prComp$x[,1],prComp$x[,3])
+plot(prComp$x[,2],prComp$x[,3])
+screeplot(prComp,type = "lines")
+summary(prComp)
+typeColor <- ((spam$type=="spam")*1+1)
+prComp <- prcomp(log10(spam[,-58]+1))
+plot(prComp$x[,1],prComp$x[,2],col=typeColor,xlab="PC1",ylab="PC2")
+preProc <- preProcess(log10(spam[,-58]+1),method = "pca",pcaComp = 2)
+spamPC <- predict(preProc,log10(spam[,-58]+1))
+plot(spamPC[,1],spamPC[,2],col=typeColor)
+preProc <- preProcess(log10(train[,-58]+1),method="pca",pcaComp=2)
+trainPC <- predict(preProc,log10(train[,-58]+1))
+modelFit <- train(train$type~.,method="glm",data=trainPC)
+testPC <- predict(preProc,log10(test[,-58]+1))
+confusionMatrix(test$type,predict(modelFit,testPC))
+#Alternative
+modelFit <- train(train$type~.,method="glm",preProcess="pca",data=train)
+confusionMatrix(test$type,predict(modelFit,test))
