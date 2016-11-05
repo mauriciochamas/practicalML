@@ -1,0 +1,22 @@
+#Predicting with Regression
+library(caret);data(faithful);fai <- faithful;set.seed(333)
+split <- createDataPartition(y=fai$waiting,p=0.5,list = F)
+train <- fai[split,];test <- fai[-split,]
+head(train)
+plot(train$waiting,train$eruptions,pch=20,xlab="Waiting",ylab="Duration")
+mod <- lm(eruptions~waiting,data = train)
+summary(mod)
+plot(train$waiting,train$eruptions,pch=20,xlab="Waiting",ylab="Duration",col="orange")
+lines(train$waiting,mod$fitted.values,lwd=1)
+#prediction
+newdata <- data.frame(waiting=80)
+predict(mod,newdata)
+par(mfrow=c(1,2))
+plot(train$waiting,train$eruptions,pch=20,col="brown",xlab="Waiting",ylab="Duration")
+lines(train$waiting,predict(mod),lwd=1)
+plot(test$waiting,test$eruptions,pch=20,col="red",xlab="Waiting",ylab="Duration")
+lines(test$waiting,predict(mod,newdata=test),lwd=1)
+summary(mod)
+modCaret <- train(eruptions~waiting,data=train,method="lm")
+summary(modCaret)
+summary(mod)
