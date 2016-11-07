@@ -1,0 +1,15 @@
+data("iris")
+library(caret)
+library(ggplot2)
+library(rpart)
+library(rattle)
+names(iris)
+table(iris$Species)
+split <- createDataPartition(y=iris$Species,p=0.7,list = F)
+train <- iris[split,]; test <- iris[-split,]
+qplot(Petal.Width,Sepal.Width,colour=Species,data = train)
+mod <- train(Species~.,method="rpart",data=train)
+mod$finalModel
+plot(mod$finalModel,uniform = T)
+text(mod$finalModel,use.n = T,all = T,cex=0.8)
+fancyRpartPlot(mod$finalModel)
